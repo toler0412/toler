@@ -1,9 +1,10 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { HashRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { HashRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import PublicPortal from './components/Portal/PublicPortal';
 import NewsDetail from './components/Portal/NewsDetail';
 import AdminDashboard from './components/Admin/AdminDashboard';
+import Login from './components/Admin/Login';
 import { News } from './types';
 import { INITIAL_NEWS } from './constants';
 
@@ -16,7 +17,22 @@ const AppContent: React.FC<{
   onUpdateCategories: (c: string[]) => void;
 }> = ({ news, categories, onUpdateNews, onUpdateCategories }) => {
   const location = useLocation();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return sessionStorage.getItem('toler_auth') === 'true';
+  });
+
   const isAdminPage = location.pathname.startsWith('/admin');
+  const portalKey = useMemo(() => categories.join('-'), [categories]);
+
+  const handleLoginSuccess = () => {
+    setIsAuthenticated(true);
+    sessionStorage.setItem('toler_auth', 'true');
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    sessionStorage.removeItem('toler_auth');
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -24,16 +40,21 @@ const AppContent: React.FC<{
         <Route 
           path="/admin/*" 
           element={
-            <AdminDashboard 
-              news={news} 
-              categories={categories}
-              onUpdate={onUpdateNews} 
-              onUpdateCategories={onUpdateCategories}
-            />
+            isAuthenticated ? (
+              <AdminDashboard 
+                news={news} 
+                categories={categories}
+                onUpdate={onUpdateNews} 
+                onUpdateCategories={onUpdateCategories}
+                onLogout={handleLogout}
+              />
+            ) : (
+              <Login onLogin={handleLoginSuccess} />
+            )
           } 
         />
         <Route path="/noticia/:slug" element={<NewsDetail news={news} />} />
-        <Route path="/*" element={<PublicPortal news={news} categories={categories} />} />
+        <Route path="/*" element={<PublicPortal key={portalKey} news={news} categories={categories} />} />
       </Routes>
 
       <div className="fixed bottom-6 right-6 z-[9999]">
@@ -87,9 +108,9 @@ const App: React.FC = () => {
   }, []);
 
   const handleUpdateCategories = useCallback((updatedCats: string[]) => {
-    console.log("Atualizando categorias no App.tsx:", updatedCats);
-    setCategories(updatedCats);
-    localStorage.setItem('toler_categories', JSON.stringify(updatedCats));
+    const cleaned = updatedCats.map(c => c.trim()).filter(c => c !== '');
+    setCategories(cleaned);
+    localStorage.setItem('toler_categories', JSON.stringify(cleaned));
   }, []);
 
   return (

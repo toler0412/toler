@@ -53,17 +53,22 @@ const Header: React.FC<HeaderProps> = ({ categories = [] }) => {
         </div>
       </div>
 
+      {/* Este bloco agora é forçado a atualizar sempre que as categorias mudarem no Admin */}
       <div className="bg-white border-b border-gray-100 hidden lg:block overflow-x-auto">
         <div className="portal-container px-4 py-3 flex gap-8 whitespace-nowrap">
-          {categories.map(cat => (
-            <Link 
-              key={cat} 
-              to={`/category/${cat.toLowerCase()}`} 
-              className="text-[12px] font-extrabold text-gray-600 hover:text-brand-red transition-colors uppercase"
-            >
-              {cat}
-            </Link>
-          ))}
+          {categories.length > 0 ? (
+            categories.map(cat => (
+              <Link 
+                key={cat} 
+                to={`/category/${cat.toLowerCase()}`} 
+                className="text-[12px] font-extrabold text-gray-600 hover:text-brand-red transition-colors uppercase border-b-2 border-transparent hover:border-brand-red pb-1"
+              >
+                {cat}
+              </Link>
+            ))
+          ) : (
+            <span className="text-[10px] text-gray-300 font-bold uppercase">Nenhuma categoria definida</span>
+          )}
         </div>
       </div>
     </nav>

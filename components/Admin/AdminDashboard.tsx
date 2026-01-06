@@ -13,9 +13,10 @@ interface AdminDashboardProps {
   categories: string[];
   onUpdate: (n: News[]) => void;
   onUpdateCategories: (c: string[]) => void;
+  onLogout: () => void;
 }
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ news, categories, onUpdate, onUpdateCategories }) => {
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ news, categories, onUpdate, onUpdateCategories, onLogout }) => {
   const location = useLocation();
 
   const handleAddNews = (newNews: News) => {
@@ -46,6 +47,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ news, categories, onUpd
           </div>
           
           <div className="flex items-center gap-4 shrink-0">
+             <button 
+               onClick={onLogout}
+               className="text-[11px] font-black uppercase text-gray-400 hover:text-brand-red transition-colors px-4"
+             >
+               Sair
+             </button>
              <Link to="/admin/nova" className="bg-black text-white px-5 py-2 rounded-lg text-[13px] font-bold hover:bg-slate-800 transition-all shadow-md active:scale-95">
                Adicionar novo...
              </Link>

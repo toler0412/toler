@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface MenuManagerProps {
   categories: string[];
@@ -10,6 +10,15 @@ const MenuManager: React.FC<MenuManagerProps> = ({ categories, onUpdate }) => {
   const [newCat, setNewCat] = useState('');
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editValue, setEditValue] = useState('');
+  const [showToast, setShowToast] = useState(false);
+
+  // Efeito para mostrar que salvou
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => setShowToast(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,13 +27,15 @@ const MenuManager: React.FC<MenuManagerProps> = ({ categories, onUpdate }) => {
       const updated = [...categories, trimmed];
       onUpdate(updated);
       setNewCat('');
+      setShowToast(true);
     }
   };
 
   const handleRemove = (catToRemove: string) => {
-    if (window.confirm(`Deseja remover a categoria "${catToRemove}"? Todas as notícias vinculadas a ela ficarão sem categoria no menu.`)) {
+    if (window.confirm(`Tem certeza que deseja remover a categoria "${catToRemove}"?`)) {
       const updated = categories.filter(c => c !== catToRemove);
       onUpdate(updated);
+      setShowToast(true);
     }
   };
 
@@ -35,44 +46,58 @@ const MenuManager: React.FC<MenuManagerProps> = ({ categories, onUpdate }) => {
 
   const saveEdit = (index: number) => {
     const trimmed = editValue.trim();
-    if (trimmed && !categories.includes(trimmed) || categories[index] === trimmed) {
+    if (!trimmed) {
+      setEditingIndex(null);
+      return;
+    }
+
+    const alreadyExists = categories.some((c, i) => c === trimmed && i !== index);
+    
+    if (!alreadyExists) {
       const updated = [...categories];
       updated[index] = trimmed;
       onUpdate(updated);
       setEditingIndex(null);
+      setShowToast(true);
     } else {
-      alert("Nome inválido ou já existente.");
+      alert("Este nome já existe no menu.");
+      setEditingIndex(null);
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="max-w-2xl mx-auto py-8 animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
+      {/* Aviso de salvamento */}
+      {showToast && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-emerald-600 text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-2xl z-[100] animate-bounce">
+          ✓ Alterações Salvas
+        </div>
+      )}
+
       <div className="bg-white border border-gray-200 rounded-[2.5rem] shadow-xl overflow-hidden">
         <div className="p-10 border-b border-gray-100 bg-slate-50/50">
           <h2 className="text-2xl font-black tracking-tight mb-2">Estrutura do Menu</h2>
-          <p className="text-sm text-gray-500 font-medium">Você pode excluir itens ou clicar no nome para renomear.</p>
+          <p className="text-sm text-gray-500 font-medium">Gerencie as editorias do seu portal de notícias.</p>
         </div>
 
         <div className="p-10 space-y-8">
-          {/* Formulário de Adição */}
           <form onSubmit={handleAdd} className="flex gap-4">
             <input 
               type="text" 
               value={newCat}
               onChange={(e) => setNewCat(e.target.value)}
-              placeholder="Ex: Tecnologia, Opinião..."
-              className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-5 py-3 text-sm focus:ring-2 focus:ring-black outline-none transition-all font-bold placeholder:font-medium"
+              placeholder="Ex: Economia, Mundo..."
+              className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-5 py-3 text-sm focus:ring-2 focus:ring-black outline-none transition-all font-bold"
             />
             <button 
               type="submit"
               disabled={!newCat.trim()}
-              className="bg-black text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-slate-800 transition-all active:scale-95 disabled:opacity-30"
+              className="bg-black text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-slate-800 transition-all disabled:opacity-30"
             >
               Adicionar
             </button>
           </form>
 
-          {/* Lista de Categorias Atuais */}
           <div className="space-y-3">
             <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-4">Itens no Menu ({categories.length})</h3>
             <div className="grid grid-cols-1 gap-3">
@@ -101,17 +126,15 @@ const MenuManager: React.FC<MenuManagerProps> = ({ categories, onUpdate }) => {
                     )}
                   </div>
                   
-                  <div className="flex items-center gap-2">
-                    <button 
-                      onClick={() => handleRemove(cat)}
-                      className="p-2 text-gray-300 hover:text-brand-red transition-all"
-                      title="Excluir item"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
-                  </div>
+                  <button 
+                    onClick={() => handleRemove(cat)}
+                    className="p-2 text-gray-300 hover:text-brand-red transition-all"
+                    title="Excluir item"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
                 </div>
               ))}
             </div>
@@ -121,7 +144,7 @@ const MenuManager: React.FC<MenuManagerProps> = ({ categories, onUpdate }) => {
         <div className="p-8 bg-brand-red/5 border-t border-brand-red/10 flex items-center gap-4">
           <div className="w-10 h-10 bg-white shadow-sm border border-brand-red/10 rounded-xl flex items-center justify-center text-lg flex-shrink-0">💡</div>
           <p className="text-[11px] text-brand-red font-bold leading-relaxed uppercase tracking-wider">
-            Para mudar o nome, basta clicar em cima do texto e digitar o novo nome.
+            Dica: Para editar, clique sobre o nome da categoria. Para remover, use a lixeira.
           </p>
         </div>
       </div>
