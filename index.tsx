@@ -1,39 +1,28 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App.tsx';
+import App from './App';
 
-console.log("DOM pronto. Iniciando ReactDOM...");
+console.log("Iniciando carregamento do React...");
 
 const rootElement = document.getElementById('root');
 
 if (rootElement) {
-  try {
-    const root = ReactDOM.createRoot(rootElement);
-    root.render(
-      <React.StrictMode>
-        <App />
-      </React.StrictMode>
-    );
-    
-    // Pequeno atraso para garantir que o primeiro frame do React foi desenhado
-    requestAnimationFrame(() => {
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+  
+  // Remove o loader após o React assumir o controle
+  setTimeout(() => {
+    const loader = document.getElementById('loading-screen');
+    if (loader) {
+      loader.style.opacity = '0';
       setTimeout(() => {
-        const loader = document.getElementById('loading-screen');
-        if (loader) {
-          loader.style.opacity = '0';
-          setTimeout(() => {
-            loader.style.display = 'none';
-          }, 500);
-        }
+        loader.style.display = 'none';
       }, 500);
-    });
-    
-    console.log("React montado com sucesso.");
-  } catch (error) {
-    console.error("Erro ao renderizar:", error);
-    throw error;
-  }
-} else {
-  console.error("Elemento root não encontrado!");
+    }
+  }, 1000);
 }

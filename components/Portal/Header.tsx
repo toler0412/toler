@@ -1,12 +1,14 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Category } from '../../types';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  categories?: string[];
+}
+
+const Header: React.FC<HeaderProps> = ({ categories = [] }) => {
   return (
     <nav className="w-full">
-      {/* Top Bar - Identidade Independente */}
       <div className="bg-brand-dark text-white text-[10px] font-bold uppercase py-2">
         <div className="portal-container px-4 flex justify-between items-center">
           <div className="flex gap-4">
@@ -22,7 +24,6 @@ const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Header - Estilo G1 mas com marca Marcelo Toler */}
       <div className="bg-white border-b border-gray-200 py-6">
         <div className="portal-container px-4 flex items-center justify-between">
           <div className="flex items-center gap-6">
@@ -52,10 +53,9 @@ const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Categories Bar - Navegação Horizontal Estilo G1 */}
-      <div className="bg-white border-b border-gray-100 hidden lg:block">
-        <div className="portal-container px-4 py-3 flex gap-8">
-          {Object.values(Category).map(cat => (
+      <div className="bg-white border-b border-gray-100 hidden lg:block overflow-x-auto">
+        <div className="portal-container px-4 py-3 flex gap-8 whitespace-nowrap">
+          {categories.map(cat => (
             <Link 
               key={cat} 
               to={`/category/${cat.toLowerCase()}`} 

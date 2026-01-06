@@ -1,18 +1,10 @@
 
-export enum Category {
-  INSIGHTS = 'Insights',
-  POLITICA = 'Política',
-  ECONOMIA = 'Economia',
-  CULTURA = 'Cultura',
-  TECH = 'Tecnologia'
-}
-
 export interface News {
   id: string;
   title: string;
   subtitle?: string;
   content: string;
-  category: Category;
+  category: string; // Mudado de Category (enum) para string
   author: string;
   publishDate: string;
   imageUrl: string;

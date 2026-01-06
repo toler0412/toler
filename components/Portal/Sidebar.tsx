@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { News } from '../../types';
+import GoogleAd from '../Common/GoogleAd';
 
 interface SidebarProps {
   latestNews: News[];
@@ -9,7 +10,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ latestNews }) => {
   return (
     <div className="flex flex-col gap-8">
-      {/* Widget Mais Lidas - Estilo Numérico G1 */}
+      {/* Widget Mais Lidas */}
       <div className="bg-white p-6 rounded-lg shadow-sm border-t-4 border-brand-red">
         <h3 className="text-xs font-black uppercase text-gray-900 mb-6 tracking-widest flex items-center gap-2">
           <span className="w-2 h-2 bg-brand-red rounded-full"></span>
@@ -34,31 +35,26 @@ const Sidebar: React.FC<SidebarProps> = ({ latestNews }) => {
         </div>
       </div>
 
-      {/* Newsletter - Conversão */}
+      {/* Publicidade Real do AdSense */}
+      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+        <span className="text-[9px] font-black uppercase text-gray-300 block text-center mb-2 tracking-widest">Publicidade</span>
+        <GoogleAd slot="1234567890" /> {/* Substitua pelo ID do bloco da Sidebar */}
+      </div>
+
+      {/* Newsletter */}
       <div className="bg-brand-dark p-8 rounded-lg text-white text-center shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-2 opacity-10">
-          <svg className="w-20 h-20" fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-        </div>
         <div className="relative z-10">
           <span className="text-[10px] font-black uppercase tracking-widest text-brand-red mb-2 block">Exclusivo</span>
           <h4 className="font-black text-lg mb-4 leading-tight">Receba as análises de Marcelo Toler</h4>
           <input 
             type="email" 
-            placeholder="Seu melhor e-mail" 
-            className="w-full bg-white/10 border border-white/20 rounded-md p-3 text-xs mb-3 outline-none focus:ring-1 focus:ring-brand-red text-white placeholder-gray-500" 
+            placeholder="Seu e-mail" 
+            className="w-full bg-white/10 border border-white/20 rounded-md p-3 text-xs mb-3 outline-none focus:ring-1 focus:ring-brand-red text-white" 
           />
           <button className="w-full bg-brand-red hover:bg-red-700 transition-colors font-black text-[11px] uppercase py-3 rounded-md tracking-widest">
-            Quero me inscrever
+            Inscrever-se
           </button>
         </div>
-      </div>
-
-      {/* Publicidade Placeholder */}
-      <div className="w-full aspect-[4/5] bg-gray-200 flex items-center justify-center rounded-lg border-2 border-dashed border-gray-300 text-gray-400">
-         <div className="text-center">
-           <span className="font-black uppercase text-[10px] tracking-widest block">Espaço Publicitário</span>
-           <span className="text-[9px] font-bold">Anuncie aqui: contato@marcelotoler.com.br</span>
-         </div>
       </div>
     </div>
   );

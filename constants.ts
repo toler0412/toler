@@ -1,5 +1,6 @@
 
-import { News, Category } from './types';
+// Fix: Removed missing Category import and replaced enum usage with string literals
+import { News } from './types';
 
 export const INITIAL_NEWS: News[] = [
   {
@@ -7,7 +8,7 @@ export const INITIAL_NEWS: News[] = [
     title: 'A Nova Era da Geopolítica: Desafios e Perspectivas para 2025',
     subtitle: 'Uma análise profunda sobre a reestruturação das cadeias de valor globais e o protagonismo brasileiro no G20.',
     content: 'O mundo atravessa uma transição silenciosa, mas definitiva. As alianças tradicionais estão sendo testadas enquanto novos blocos emergem...',
-    category: Category.INSIGHTS,
+    category: 'Insights',
     author: 'Marcelo Toler',
     publishDate: new Date().toISOString(),
     imageUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=2000',
@@ -19,8 +20,8 @@ export const INITIAL_NEWS: News[] = [
     id: '2',
     title: 'Inteligência Artificial: O Fim ou o Recomeço da Criatividade?',
     subtitle: 'Como as ferramentas generativas estão redefinindo o conceito de autoria na era digital.',
-    content: 'A arte sempre foi o reflexo da alma humana. Mas o que acontece quando o espelho é um algoritmo?',
-    category: Category.TECH,
+    content: 'A arte sempre foi o reflexo da alma humana. But what happens when the mirror is an algorithm?',
+    category: 'Tecnologia',
     author: 'Equipe Editorial',
     publishDate: new Date().toISOString(),
     imageUrl: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=1200',
