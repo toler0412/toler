@@ -47,7 +47,7 @@ const PublicPortal: React.FC<PublicPortalProps> = ({ news, categories }) => {
         </div>
       </main>
 
-      <Footer />
+      <Footer categories={categories} />
     </div>
   );
 };

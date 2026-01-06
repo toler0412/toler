@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { HashRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import PublicPortal from './components/Portal/PublicPortal';
 import NewsDetail from './components/Portal/NewsDetail';
 import AdminDashboard from './components/Admin/AdminDashboard';
@@ -15,14 +15,12 @@ const AppContent: React.FC<{
   categories: string[];
   onUpdateNews: (n: News[]) => void;
   onUpdateCategories: (c: string[]) => void;
-}> = ({ news, categories, onUpdateNews, onUpdateCategories }) => {
+  onImportData: (data: string) => void;
+}> = ({ news, categories, onUpdateNews, onUpdateCategories, onImportData }) => {
   const location = useLocation();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return sessionStorage.getItem('toler_auth') === 'true';
-  });
-
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => sessionStorage.getItem('toler_auth') === 'true');
   const isAdminPage = location.pathname.startsWith('/admin');
-  const portalKey = useMemo(() => categories.join('-'), [categories]);
+  const portalKey = useMemo(() => categories.join('|'), [categories]);
 
   const handleLoginSuccess = () => {
     setIsAuthenticated(true);
@@ -46,6 +44,7 @@ const AppContent: React.FC<{
                 categories={categories}
                 onUpdate={onUpdateNews} 
                 onUpdateCategories={onUpdateCategories}
+                onImportData={onImportData}
                 onLogout={handleLogout}
               />
             ) : (
@@ -53,65 +52,66 @@ const AppContent: React.FC<{
             )
           } 
         />
-        <Route path="/noticia/:slug" element={<NewsDetail news={news} />} />
+        <Route path="/noticia/:slug" element={<NewsDetail news={news} categories={categories} />} />
         <Route path="/*" element={<PublicPortal key={portalKey} news={news} categories={categories} />} />
       </Routes>
 
-      <div className="fixed bottom-6 right-6 z-[9999]">
-        <Link 
-          to={isAdminPage ? '/' : '/admin'}
-          className="bg-brand-dark text-white px-6 py-3 rounded-full shadow-2xl hover:bg-gray-800 transition-all font-bold flex items-center gap-2 border border-white/10 group"
-        >
-          <span className="text-sm">
-            {isAdminPage ? 'Sair do Painel' : 'Painel Administrativo'}
-          </span>
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 transition-transform group-hover:rotate-12" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-          </svg>
-        </Link>
-      </div>
+      {!isAdminPage && (
+        <div className="fixed bottom-6 right-6 z-[9999]">
+          <Link 
+            to="/admin"
+            className="bg-brand-dark text-white px-6 py-3 rounded-full shadow-2xl hover:bg-gray-800 transition-all font-bold flex items-center gap-2 border border-white/10"
+          >
+            Painel Admin
+          </Link>
+        </div>
+      )}
     </div>
   );
 };
 
 const App: React.FC = () => {
-  const [news, setNews] = useState<News[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
+  const [news, setNews] = useState<News[]>(() => {
+    const saved = localStorage.getItem('toler_news');
+    return saved ? JSON.parse(saved) : INITIAL_NEWS;
+  });
+
+  const [categories, setCategories] = useState<string[]>(() => {
+    const saved = localStorage.getItem('toler_categories');
+    return saved ? JSON.parse(saved) : DEFAULT_CATEGORIES;
+  });
 
   useEffect(() => {
-    try {
-      const savedNews = localStorage.getItem('toler_news');
-      if (savedNews) {
-        setNews(JSON.parse(savedNews));
-      } else {
-        setNews(INITIAL_NEWS);
-        localStorage.setItem('toler_news', JSON.stringify(INITIAL_NEWS));
-      }
-
-      const savedCats = localStorage.getItem('toler_categories');
-      if (savedCats) {
-        setCategories(JSON.parse(savedCats));
-      } else {
-        setCategories(DEFAULT_CATEGORIES);
-        localStorage.setItem('toler_categories', JSON.stringify(DEFAULT_CATEGORIES));
-      }
-    } catch (e) {
-      console.error("Erro ao carregar dados:", e);
-      setNews(INITIAL_NEWS);
-      setCategories(DEFAULT_CATEGORIES);
-    }
+    const sync = (e: StorageEvent) => {
+      if (e.key === 'toler_categories' && e.newValue) setCategories(JSON.parse(e.newValue));
+      if (e.key === 'toler_news' && e.newValue) setNews(JSON.parse(e.newValue));
+    };
+    window.addEventListener('storage', sync);
+    return () => window.removeEventListener('storage', sync);
   }, []);
 
-  const handleUpdateNews = useCallback((updatedNews: News[]) => {
-    setNews(updatedNews);
-    localStorage.setItem('toler_news', JSON.stringify(updatedNews));
+  const handleUpdateNews = useCallback((updated: News[]) => {
+    setNews([...updated]);
+    localStorage.setItem('toler_news', JSON.stringify(updated));
   }, []);
 
-  const handleUpdateCategories = useCallback((updatedCats: string[]) => {
-    const cleaned = updatedCats.map(c => c.trim()).filter(c => c !== '');
-    setCategories(cleaned);
+  const handleUpdateCategories = useCallback((updated: string[]) => {
+    const cleaned = updated.map(c => c.trim()).filter(c => c !== '');
+    setCategories([...cleaned]);
     localStorage.setItem('toler_categories', JSON.stringify(cleaned));
+    window.dispatchEvent(new Event('storage'));
   }, []);
+
+  const handleImportData = useCallback((dataStr: string) => {
+    try {
+      const data = JSON.parse(dataStr);
+      if (data.categories) handleUpdateCategories(data.categories);
+      if (data.news) handleUpdateNews(data.news);
+      alert("Sincronização concluída com sucesso!");
+    } catch (e) {
+      alert("Erro ao importar dados. Verifique o formato.");
+    }
+  }, [handleUpdateCategories, handleUpdateNews]);
 
   return (
     <HashRouter>
@@ -119,7 +119,8 @@ const App: React.FC = () => {
         news={news} 
         categories={categories} 
         onUpdateNews={handleUpdateNews} 
-        onUpdateCategories={handleUpdateCategories} 
+        onUpdateCategories={handleUpdateCategories}
+        onImportData={handleImportData}
       />
     </HashRouter>
   );

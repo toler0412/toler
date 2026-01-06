@@ -1,11 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { News } from '../../types';
 import DomainConfig from './DomainConfig';
 import NewsForm from './NewsForm';
 import CreationHub from './CreationHub';
-import ProjectOverview from './ProjectOverview';
 import MenuManager from './MenuManager';
 
 interface AdminDashboardProps {
@@ -13,102 +12,108 @@ interface AdminDashboardProps {
   categories: string[];
   onUpdate: (n: News[]) => void;
   onUpdateCategories: (c: string[]) => void;
+  onImportData: (data: string) => void;
   onLogout: () => void;
 }
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ news, categories, onUpdate, onUpdateCategories, onLogout }) => {
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ news, categories, onUpdate, onUpdateCategories, onImportData, onLogout }) => {
   const location = useLocation();
+  const [importText, setImportText] = useState('');
 
-  const handleAddNews = (newNews: News) => {
-    onUpdate([newNews, ...news]);
+  const handleExport = () => {
+    const data = JSON.stringify({ news, categories });
+    navigator.clipboard.writeText(data);
+    alert("Código de sincronização copiado! Agora vá no outro navegador, entre no Painel e cole na aba 'Sincronizar'.");
   };
 
   const isAdminRoot = location.pathname === '/admin' || location.pathname === '/admin/';
-  const isProjectView = location.pathname.includes('/projeto');
-  const isMenuView = location.pathname.includes('/menu');
-  const isDomainView = location.pathname.includes('/dominio');
+  const isSyncView = location.pathname.includes('/sincronizar');
 
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900">
       <header className="border-b border-gray-100 bg-white sticky top-0 z-50">
         <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-8 overflow-x-auto h-full">
-            <Link to="/admin" className="flex items-center gap-3 mr-4 shrink-0">
-               <div className="w-7 h-7 bg-black rounded flex items-center justify-center text-white text-[11px] font-black shadow-lg">MT</div>
-               <span className="text-[13px] font-bold whitespace-nowrap tracking-tight">Painel Marcelo Toler</span>
+          <div className="flex items-center gap-8 overflow-x-auto">
+            <Link to="/admin" className="flex items-center gap-3 shrink-0">
+               <div className="w-7 h-7 bg-black rounded flex items-center justify-center text-white text-[11px] font-black">MT</div>
+               <span className="text-[13px] font-bold">Painel Marcelo Toler</span>
             </Link>
-            
-            <nav className="flex gap-6 h-full items-center text-[13px] font-medium text-gray-400">
-               <Link to="/admin" className={`h-full flex items-center border-b-2 transition-all px-1 whitespace-nowrap ${isAdminRoot ? 'border-black text-black font-bold' : 'border-transparent hover:text-black'}`}>Visão geral</Link>
-               <Link to="/admin/menu" className={`h-full flex items-center border-b-2 transition-all px-1 whitespace-nowrap ${isMenuView ? 'border-black text-black font-bold' : 'border-transparent hover:text-black'}`}>Menu / Categorias</Link>
-               <Link to="/admin/projeto" className={`h-full flex items-center border-b-2 transition-all px-1 whitespace-nowrap ${isProjectView ? 'border-black text-black font-bold' : 'border-transparent hover:text-black'}`}>Projeto Ativo</Link>
-               <Link to="/admin/dominio" className={`h-full flex items-center border-b-2 transition-all px-1 whitespace-nowrap ${isDomainView ? 'border-black text-black font-bold' : 'border-transparent hover:text-black'}`}>Domínios</Link>
+            <nav className="flex gap-6 text-[13px] font-medium text-gray-400">
+               <Link to="/admin" className={isAdminRoot ? 'text-black font-bold' : ''}>Postagens</Link>
+               <Link to="/admin/menu" className={location.pathname.includes('/menu') ? 'text-black font-bold' : ''}>Menu</Link>
+               <Link to="/admin/sincronizar" className={isSyncView ? 'text-black font-bold' : ''}>Sincronizar (Janela Anônima)</Link>
             </nav>
           </div>
-          
-          <div className="flex items-center gap-4 shrink-0">
-             <button 
-               onClick={onLogout}
-               className="text-[11px] font-black uppercase text-gray-400 hover:text-brand-red transition-colors px-4"
-             >
-               Sair
-             </button>
-             <Link to="/admin/nova" className="bg-black text-white px-5 py-2 rounded-lg text-[13px] font-bold hover:bg-slate-800 transition-all shadow-md active:scale-95">
-               Adicionar novo...
-             </Link>
-          </div>
+          <button onClick={onLogout} className="text-[11px] font-bold text-gray-400 hover:text-red-600">Sair</button>
         </div>
       </header>
 
       <main className="max-w-[1400px] mx-auto px-6 py-10">
         <Routes>
           <Route index element={
-            <div className="animate-in fade-in duration-500">
-               <div className="flex justify-between items-end mb-10">
-                 <div>
-                   <h2 className="text-3xl font-black tracking-tight mb-2">Painel de Controle</h2>
-                   <p className="text-gray-400 text-sm font-medium">Gerencie o portal oficial de Marcelo Toler.</p>
-                 </div>
-               </div>
-
-               <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                <div className="lg:col-span-3 space-y-8">
-                  <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-sm">
-                    <h3 className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-6">Métricas Atuais</h3>
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-bold text-gray-600">Publicações</span>
-                        <span className="text-lg font-black">{news.length}</span>
-                      </div>
-                      <Link to="/admin/menu" className="flex justify-between items-center group cursor-pointer">
-                        <span className="text-sm font-bold text-gray-600 group-hover:text-black">Categorias de Menu</span>
-                        <span className="text-lg font-black group-hover:text-blue-600">{categories.length}</span>
-                      </Link>
+            <div className="space-y-8">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-black">Suas Postagens</h2>
+                <Link to="/admin/nova" className="bg-black text-white px-6 py-2 rounded-xl font-bold">Nova Notícia</Link>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {news.map(n => (
+                  <div key={n.id} className="border border-gray-100 p-4 rounded-2xl flex gap-4">
+                    <img src={n.imageUrl} className="w-16 h-16 rounded-lg object-cover" />
+                    <div>
+                      <h4 className="font-bold text-sm line-clamp-1">{n.title}</h4>
+                      <span className="text-[10px] uppercase font-bold text-gray-400">{n.category}</span>
                     </div>
                   </div>
-                </div>
-
-                <div className="lg:col-span-9">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    {news.map(n => (
-                      <div key={n.id} className="bg-white border border-gray-100 rounded-[2rem] p-6 hover:shadow-xl transition-all group">
-                        <div className="flex justify-between items-start mb-6">
-                          <img src={n.imageUrl} className="w-14 h-14 rounded-2xl object-cover shadow-sm" alt="" />
-                          <span className="text-[9px] font-black text-gray-400 uppercase bg-gray-50 px-2 py-1 rounded-md">{new Date(n.publishDate).toLocaleDateString()}</span>
-                        </div>
-                        <h4 className="text-base font-black mb-2 line-clamp-2 leading-tight group-hover:text-blue-600">{n.title}</h4>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           } />
-          <Route path="projeto" element={<ProjectOverview />} />
+          
+          <Route path="sincronizar" element={
+            <div className="max-w-2xl mx-auto space-y-8">
+              <div className="bg-blue-50 p-8 rounded-[2rem] border border-blue-100">
+                <h2 className="text-xl font-black text-blue-900 mb-4 uppercase tracking-tight">Sincronização entre Navegadores</h2>
+                <p className="text-sm text-blue-700 leading-relaxed mb-6">
+                  Como este site é moderno e rápido, ele salva tudo no seu computador. Para ver as mudanças em uma <strong>Janela Anônima</strong> ou em outro PC, você precisa transferir os dados:
+                </p>
+                <div className="space-y-4">
+                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-blue-200">
+                    <p className="text-xs font-bold text-gray-500 uppercase mb-3">1. No navegador original (onde você editou):</p>
+                    <button onClick={handleExport} className="w-full bg-blue-600 text-white py-3 rounded-xl font-black uppercase text-xs tracking-widest shadow-lg shadow-blue-600/20">
+                      Copiar Código de Sincronização
+                    </button>
+                  </div>
+                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-blue-200">
+                    <p className="text-xs font-bold text-gray-500 uppercase mb-3">2. No navegador anônimo (onde está antigo):</p>
+                    <textarea 
+                      value={importText}
+                      onChange={(e) => setImportText(e.target.value)}
+                      placeholder="Cole aqui o código que você copiou..."
+                      className="w-full h-24 bg-gray-50 border border-gray-200 rounded-xl p-4 text-xs font-mono mb-4 outline-none focus:border-blue-500"
+                    />
+                    <button 
+                      onClick={() => onImportData(importText)}
+                      disabled={!importText}
+                      className="w-full bg-emerald-600 text-white py-3 rounded-xl font-black uppercase text-xs tracking-widest disabled:opacity-30"
+                    >
+                      Aplicar Sincronização
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div className="p-8 border border-gray-100 rounded-[2rem] bg-gray-50">
+                 <h3 className="text-xs font-black uppercase text-gray-400 mb-2">Por que isso é necessário?</h3>
+                 <p className="text-xs text-gray-500 leading-relaxed">
+                   Sites profissionais de notícias usam servidores de banco de dados (que custam mensalidade). Para te entregar um sistema gratuito e potente, usamos o armazenamento do seu próprio navegador. A sincronização acima resolve o problema de visualização em diferentes abas!
+                 </p>
+              </div>
+            </div>
+          } />
+
           <Route path="menu" element={<MenuManager categories={categories} onUpdate={onUpdateCategories} />} />
           <Route path="nova" element={<CreationHub />} />
-          <Route path="formulario" element={<NewsForm categories={categories} onSubmit={handleAddNews} />} />
-          <Route path="dominio" element={<DomainConfig />} />
+          <Route path="formulario" element={<NewsForm categories={categories} onSubmit={(n) => onUpdate([n, ...news])} />} />
         </Routes>
       </main>
     </div>

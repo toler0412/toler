@@ -7,7 +7,7 @@ import Footer from './Footer';
 import Sidebar from './Sidebar';
 import GoogleAd from '../Common/GoogleAd';
 
-const NewsDetail: React.FC<{ news: News[] }> = ({ news }) => {
+const NewsDetail: React.FC<{ news: News[], categories: string[] }> = ({ news, categories }) => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const article = news.find(n => n.slug === slug);
@@ -29,7 +29,7 @@ const NewsDetail: React.FC<{ news: News[] }> = ({ news }) => {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header />
+      <Header categories={categories} />
       
       <main className="portal-container px-4 py-8 lg:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
@@ -81,7 +81,7 @@ const NewsDetail: React.FC<{ news: News[] }> = ({ news }) => {
         </div>
       </main>
 
-      <Footer />
+      <Footer categories={categories} />
     </div>
   );
 };
