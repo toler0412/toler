@@ -1,22 +1,27 @@
 
 import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Link } from 'react-router-dom';
-import PublicPortal from './components/Portal/PublicPortal';
-import NewsDetail from './components/Portal/NewsDetail';
-import AdminDashboard from './components/Admin/AdminDashboard';
-import { News } from './types';
-import { INITIAL_NEWS } from './constants';
+import PublicPortal from './components/Portal/PublicPortal.tsx';
+import NewsDetail from './components/Portal/NewsDetail.tsx';
+import AdminDashboard from './components/Admin/AdminDashboard.tsx';
+import { News } from './types.ts';
+import { INITIAL_NEWS } from './constants.ts';
 
 const App: React.FC = () => {
   const [news, setNews] = useState<News[]>([]);
 
   useEffect(() => {
-    const saved = localStorage.getItem('toler_news');
-    if (saved) {
-      setNews(JSON.parse(saved));
-    } else {
+    try {
+      const saved = localStorage.getItem('toler_news');
+      if (saved) {
+        setNews(JSON.parse(saved));
+      } else {
+        setNews(INITIAL_NEWS);
+        localStorage.setItem('toler_news', JSON.stringify(INITIAL_NEWS));
+      }
+    } catch (e) {
+      console.error("Erro ao carregar notícias do cache:", e);
       setNews(INITIAL_NEWS);
-      localStorage.setItem('toler_news', JSON.stringify(INITIAL_NEWS));
     }
   }, []);
 
