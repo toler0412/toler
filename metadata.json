@@ -1,0 +1,8 @@
+{
+  "name": "Blog Marcelo Toler - Portal de Notícias",
+  "description": "Um portal de notícias moderno inspirado na CNN Brasil, com painel administrativo completo, sistema de publicação e design responsivo.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
