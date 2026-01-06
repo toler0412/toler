@@ -1,11 +1,10 @@
 
 export enum Category {
+  INSIGHTS = 'Insights',
   POLITICA = 'Política',
   ECONOMIA = 'Economia',
-  ESPORTES = 'Esportes',
-  ENTRETENIMENTO = 'Entretenimento',
-  TECNOLOGIA = 'Tecnologia',
-  AO_VIVO = 'Ao Vivo'
+  CULTURA = 'Cultura',
+  TECH = 'Tecnologia'
 }
 
 export interface News {
@@ -14,18 +13,11 @@ export interface News {
   subtitle?: string;
   content: string;
   category: Category;
-  tags: string[];
   author: string;
   publishDate: string;
   imageUrl: string;
-  videoUrl?: string;
-  isBreaking: boolean;
+  readingTime: string;
   isFeatured: boolean;
   slug: string;
-}
-
-export interface SiteConfig {
-  name: string;
-  domain: string;
-  logo: string;
+  tags?: string[];
 }

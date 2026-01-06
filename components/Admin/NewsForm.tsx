@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { News, Category } from '../../types';
 
 interface NewsFormProps {
@@ -8,168 +9,128 @@ interface NewsFormProps {
 }
 
 const NewsForm: React.FC<NewsFormProps> = ({ onSubmit, initialData }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: initialData?.title || '',
     subtitle: initialData?.subtitle || '',
-    category: initialData?.category || Category.POLITICA,
+    category: initialData?.category || Category.INSIGHTS,
     author: initialData?.author || 'Marcelo Toler',
     content: initialData?.content || '',
-    imageUrl: initialData?.imageUrl || 'https://picsum.photos/seed/' + Math.random() + '/1200/600',
-    isBreaking: initialData?.isBreaking || false,
+    imageUrl: initialData?.imageUrl || 'https://images.unsplash.com/photo-1493612276216-ee3925520721?auto=format&fit=crop&q=80&w=1200',
     isFeatured: initialData?.isFeatured || false,
-    tags: initialData?.tags?.join(', ') || ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const slug = formData.title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
     
+    const words = formData.content.split(' ').length;
+    const time = Math.max(1, Math.ceil(words / 200));
+
     const newNews: News = {
-      id: initialData?.id || Math.random().toString(36).substr(2, 9),
-      title: formData.title,
-      subtitle: formData.subtitle,
-      category: formData.category,
-      author: formData.author,
-      content: formData.content,
-      imageUrl: formData.imageUrl,
-      isBreaking: formData.isBreaking,
-      isFeatured: formData.isFeatured,
+      id: Math.random().toString(36).substr(2, 9),
+      ...formData,
       publishDate: new Date().toISOString(),
-      tags: formData.tags.split(',').map(t => t.trim()),
+      readingTime: `${time} min`,
       slug
     };
     
     onSubmit(newNews);
+    navigate('/admin');
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border overflow-hidden">
-      <div className="p-6 border-b flex justify-between items-center bg-gray-50">
-        <h2 className="text-xl font-bold text-gray-800">Criar Nova Notícia</h2>
-        <div className="flex gap-3">
-           <button type="button" className="px-4 py-2 border rounded-lg text-sm font-bold text-gray-500 hover:bg-gray-100 transition">Salvar Rascunho</button>
-           <button type="submit" className="px-4 py-2 bg-cnn-red text-white rounded-lg text-sm font-bold hover:bg-red-700 transition">Publicar Agora</button>
-        </div>
+    <div className="max-w-5xl mx-auto py-4">
+      <div className="flex items-center gap-4 mb-8">
+        <button onClick={() => navigate('/admin')} className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 transition-colors">
+           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        </button>
+        <h2 className="text-2xl font-bold tracking-tight">Nova Publicação</h2>
       </div>
 
-      <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="md:col-span-2 space-y-6">
-          <div>
-            <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Título da Notícia</label>
-            <input 
-              required
-              type="text" 
-              value={formData.title}
-              onChange={e => setFormData({...formData, title: e.target.value})}
-              placeholder="Ex: Novo aumento do PIB surpreende economistas"
-              className="w-full border rounded-lg p-3 text-lg font-bold focus:ring-2 focus:ring-cnn-red/20 outline-none"
-            />
-          </div>
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-6">
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 block mb-2">Título Principal</label>
+              <input 
+                required
+                type="text" 
+                value={formData.title}
+                onChange={e => setFormData({...formData, title: e.target.value})}
+                className="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-lg font-bold focus:ring-1 focus:ring-black outline-none"
+                placeholder="Título da notícia..."
+              />
+            </div>
 
-          <div>
-            <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Subtítulo / Linha Fina</label>
-            <textarea 
-              rows={2}
-              value={formData.subtitle}
-              onChange={e => setFormData({...formData, subtitle: e.target.value})}
-              placeholder="Um breve resumo chamativo para a notícia..."
-              className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-cnn-red/20 outline-none"
-            />
-          </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 block mb-2">Subtítulo ou Resumo</label>
+              <textarea 
+                value={formData.subtitle}
+                onChange={e => setFormData({...formData, subtitle: e.target.value})}
+                className="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm focus:ring-1 focus:ring-black outline-none h-24 resize-none"
+                placeholder="Uma breve introdução..."
+              />
+            </div>
 
-          <div>
-            <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Conteúdo da Notícia (Markdown/HTML)</label>
-            <textarea 
-              required
-              rows={12}
-              value={formData.content}
-              onChange={e => setFormData({...formData, content: e.target.value})}
-              placeholder="Escreva aqui o corpo completo da matéria..."
-              className="w-full border rounded-lg p-3 font-mono text-sm focus:ring-2 focus:ring-cnn-red/20 outline-none"
-            />
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 block mb-2">Conteúdo da Matéria</label>
+              <textarea 
+                required
+                value={formData.content}
+                onChange={e => setFormData({...formData, content: e.target.value})}
+                className="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-base focus:ring-1 focus:ring-black outline-none h-64"
+                placeholder="Escreva sua história aqui..."
+              />
+            </div>
           </div>
         </div>
 
         <div className="space-y-6">
-          <div className="p-5 bg-gray-50 rounded-xl border">
-            <h3 className="font-bold text-sm uppercase mb-4 text-gray-700">Configurações</h3>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-[10px] font-bold uppercase text-gray-400 mb-1">Categoria</label>
-                <select 
-                  value={formData.category}
-                  onChange={e => setFormData({...formData, category: e.target.value as Category})}
-                  className="w-full border rounded p-2 text-sm outline-none"
-                >
-                  {Object.values(Category).map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold uppercase text-gray-400 mb-1">Autor</label>
-                <input 
-                  type="text" 
-                  value={formData.author}
-                  onChange={e => setFormData({...formData, author: e.target.value})}
-                  className="w-full border rounded p-2 text-sm outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold uppercase text-gray-400 mb-1">Tags (separadas por vírgula)</label>
-                <input 
-                  type="text" 
-                  value={formData.tags}
-                  onChange={e => setFormData({...formData, tags: e.target.value})}
-                  className="w-full border rounded p-2 text-sm outline-none"
-                  placeholder="economia, pib, brasil"
-                />
-              </div>
-
-              <div className="flex flex-col gap-3 pt-2">
-                <label className="flex items-center gap-3 cursor-pointer">
-                   <input 
-                    type="checkbox" 
-                    checked={formData.isBreaking}
-                    onChange={e => setFormData({...formData, isBreaking: e.target.checked})}
-                    className="w-4 h-4 rounded text-cnn-red focus:ring-cnn-red" 
-                  />
-                   <span className="text-sm font-semibold text-gray-700">Destaque como Urgente</span>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer">
-                   <input 
-                    type="checkbox" 
-                    checked={formData.isFeatured}
-                    onChange={e => setFormData({...formData, isFeatured: e.target.checked})}
-                    className="w-4 h-4 rounded text-cnn-red focus:ring-cnn-red" 
-                  />
-                   <span className="text-sm font-semibold text-gray-700">Notícia Principal (Home)</span>
-                </label>
-              </div>
+          <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-6">
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 block mb-2">Categoria</label>
+              <select 
+                value={formData.category}
+                onChange={e => setFormData({...formData, category: e.target.value as Category})}
+                className="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm font-bold focus:ring-1 focus:ring-black outline-none appearance-none cursor-pointer"
+              >
+                {Object.values(Category).map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
             </div>
-          </div>
 
-          <div className="p-5 bg-gray-50 rounded-xl border">
-            <h3 className="font-bold text-sm uppercase mb-4 text-gray-700">Imagem de Capa</h3>
-            <div className="aspect-video bg-gray-200 rounded-lg overflow-hidden mb-4 relative group">
-              <img src={formData.imageUrl} className="w-full h-full object-cover" alt="Preview" />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition cursor-pointer">
-                 <span className="text-white text-xs font-bold uppercase">Trocar Imagem</span>
-              </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 block mb-2">URL da Imagem</label>
+              <input 
+                type="url" 
+                value={formData.imageUrl}
+                onChange={e => setFormData({...formData, imageUrl: e.target.value})}
+                className="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm focus:ring-1 focus:ring-black outline-none"
+              />
             </div>
-            <input 
-              type="text" 
-              value={formData.imageUrl}
-              onChange={e => setFormData({...formData, imageUrl: e.target.value})}
-              placeholder="URL da imagem..."
-              className="w-full border rounded p-2 text-[10px] outline-none"
-            />
-            <p className="text-[10px] text-gray-400 mt-2 font-medium">Dimensões recomendadas: 1920x1080px (16:9)</p>
+
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Destaque na Home</span>
+              <input 
+                type="checkbox" 
+                checked={formData.isFeatured}
+                onChange={e => setFormData({...formData, isFeatured: e.target.checked})}
+                className="w-5 h-5 rounded border-gray-300 text-black focus:ring-black"
+              />
+            </div>
+
+            <button 
+              type="submit"
+              className="w-full bg-black text-white py-3 rounded-lg font-bold hover:bg-gray-800 transition-all shadow-sm"
+            >
+              Publicar Agora
+            </button>
           </div>
         </div>
-      </div>
-    </form>
+      </form>
+    </div>
   );
 };
 
